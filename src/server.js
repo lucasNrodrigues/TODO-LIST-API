@@ -10,21 +10,36 @@ const listRoutes = require('./routes/listRoutes');
 
 const app = express();
 
-// --- CORREÇÃO AQUI ---
+
+// --- PRIMEIRO MIDDLEWARE DE DEPURAÇÃO ---
+// Este middleware vai rodar ANTES de o Express tentar ler o corpo da requisição.
+app.use((req, res, next) => {
+  console.log(`--- [LOG 1: ANTES DO PARSE] Recebida requisição ${req.method} para a URL ${req.url}`);
+  next(); // Passa para o próximo middleware
+});
+
+
 // Middleware essencial para que o Express consiga interpretar o corpo das requisições em formato JSON.
-// IMPORTANTE: Esta linha DEVE vir ANTES da definição das rotas (app.use('/auth', ...)).
 app.use(express.json());
 
 
-// Rota de "saúde" da API, para verificar se está online
+// --- SEGUNDO MIDDLEWARE DE DEPURAÇÃO ---
+// Este middleware vai rodar DEPOIS de o Express tentar ler o corpo.
+app.use((req, res, next) => {
+  console.log('--- [LOG 2: DEPOIS DO PARSE] O corpo da requisição (req.body) é:', req.body);
+  next(); // Passa para as rotas
+});
+
+
+// Rota de "saúde" da API
 app.get('/', (req, res) => {
   res.status(200).send('API de Tarefas - Projeto de Sistemas Distribuídos');
 });
 
-// Rotas públicas (não precisam de token)
+// Rotas públicas
 app.use('/auth', authRoutes);
 
-// Rotas privadas (protegidas por middleware)
+// Rotas privadas
 app.use('/tasks', taskRoutes);
 app.use('/lists', listRoutes);
 
